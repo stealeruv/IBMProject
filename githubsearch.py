@@ -7,23 +7,24 @@ def is_hex_64(s):
     except ValueError:
         return False
 
-def github_search_hex_string():
+def github_search_hex_string(access_token):
     base_url = "https://api.github.com/search/code"
     query = "filename:*.md extension:md "  # Adjust the query as needed
     query += "NOT repo:.github"  # Exclude certain repositories if needed
 
+    headers = {'Authorization': f'token {access_token}'}
     params = {
         'q': query,
         'per_page': 10,  # Adjust the number of results per page as needed
     }
 
-    response = requests.get(base_url, params=params)
+    response = requests.get(base_url, headers=headers, params=params)
 
     if response.status_code == 200:
         results = response.json().get('items', [])
         for result in results:
             file_content_url = result['url']
-            file_content_response = requests.get(file_content_url)
+            file_content_response = requests.get(file_content_url, headers=headers)
             if file_content_response.status_code == 200:
                 file_content = file_content_response.json().get('content', '')
                 if is_hex_64(file_content):
@@ -36,4 +37,5 @@ def github_search_hex_string():
         print(f"Error: {response.status_code}, {response.text}")
 
 # Example usage:
-github_search_hex_string()
+your_access_token = "YOUR_ACCESS_TOKEN"
+github_search_hex_string(your_access_token)
